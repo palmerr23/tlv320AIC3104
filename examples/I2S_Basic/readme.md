@@ -1,4 +1,4 @@
-## Demonstrate the basic functions of the 8x8 Audio Board
+## Demonstrate the basic functions of the Stereo Pico Audio Board
 
 This example uses the standard Arduino-Pico I2S drivers to produce a 500Hz tone from a static buffer.
 
