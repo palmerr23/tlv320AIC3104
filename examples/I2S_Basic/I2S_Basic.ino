@@ -1,4 +1,5 @@
 /*
+V1 Board uses Wire1
  * TLV320AIC3104 I2S module
  * Arduino-Pico V5.3.0
 
@@ -41,13 +42,21 @@ TLV320AIC3104 aic(CODECS, true, AICMODE_I2S, sampleRate, sampleLength);
 #define MCLK 17
 #define RST  16
 
-#define SDAPIN 4 
-#define SCLPIN 5 
+#define SDAPIN 6 // Wire1 (6) on V1, Wire (4) on V2
+#define SCLPIN 7 // Wire1 (7) on V1, Wire (5) on V2
 
 #define BUFLEN 2048
 int16_t outBuf[BUFLEN]; // stereo
+volatile int bytesAvail;
+
+void i2sCallback()
+{
+  bytesAvail = i2s.availableForWrite();
+}
 
 int muxesFound = 0;
+#define PRINT_EVERY 5000
+uint32_t timer;
 void setup() 
 {
   Serial.begin(115200);
@@ -55,13 +64,14 @@ void setup()
 			delay(10);
   Serial.println("\n\nArduino Pico Duplex I2S TLV320AIC3104 example");
 	
-	Wire.setSDA(SDAPIN);
-	Wire.setSCL(SCLPIN);
-  Wire.begin();
-  Wire.setClock(100000);
+	Wire1.setSDA(SDAPIN);
+	Wire1.setSCL(SCLPIN);
+  Wire1.begin();
+  Wire1.setClock(100000);
 
-	fillSineBuffer(500, 15000); // 500Hz, ~max value (16 bits)
+	fillSineBuffer(500, 30000); // 500Hz, ~32000 max value (16 bits)
   set_sys_clock_khz(I2SSYSCLK_8, false);
+
 
 #ifdef OUTPUT_ONLY
   i2s.setDATA(DOUT);
@@ -74,6 +84,7 @@ void setup()
   i2s.setMCLKmult(MCLKmult);
   i2s.setBitsPerSample(sampleLength);
   i2s.setFrequency(sampleRate);
+  i2s.onTransmit(i2sCallback);
   i2s.begin();
   
   int8_t testCodec = 0;
@@ -81,11 +92,11 @@ void setup()
     testCodec = 0;
 
   delay(100);
-  aic.i2cBus(&Wire);
-  aic.setVerbose(1); // to see verbose output set Arduino: Tools > Debug Port to Serial
+  aic.i2cBus(&Wire1);
+  aic.setVerbose(2);
 
   aic.begin(RST);
-  i2cScan(&Wire); // need to scan after MCLK is present and chip is reset
+  i2cScan(&Wire1); // need to scan after MCLK is present and chip is reset
    // command when issued before enable(): all inputs are affected
   aic.inputMode(AIC_SINGLE); // or AIC_DIFF
 
@@ -99,6 +110,7 @@ void setup()
   aic.pad2(0,-1,testCodec); // enable IPUT 2
 
   Serial.println("Done setup");
+  timer = millis();
 }
 
 int bufIndx = 0;
@@ -113,6 +125,11 @@ void loop()
 #endif
 
 	bufIndx = (bufIndx + 1) % BUFLEN;  
+  if(millis() > timer + PRINT_EVERY)
+  {  
+    Serial.printf("Bytes avail to write %i\n", bytesAvail);
+    timer = millis();
+  }
 }
 
 // frequency should be limited to < 1/2 sampleRate
@@ -129,6 +146,7 @@ void i2cScan(TwoWire *i2c) {
  // genReset();
      
   Serial.print ("Scan ");
+
   for (uint8_t i = 8; i < 120; i++)
   {     
     i2c->beginTransmission (i);
