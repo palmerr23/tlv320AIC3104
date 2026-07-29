@@ -1,8 +1,8 @@
 # I2S Digital Output Test
 
-44.1kHz, 16-bit mode
+A basic test for a synthesised sinewave to both main and HP I2S outputs using the AudioTools library https://github.com/pschatzmann/arduino-audio-tools
 
-This is a simple basic test for sinewave to both main and HP I2S outputs 
+44.1kHz, 16-bit mode, 1kHz tone, 2V p-p
 
 We just send a generated sine wave and expect to hear a clean signal.
 Please note the log level should be set so that there is no disturbing output!
