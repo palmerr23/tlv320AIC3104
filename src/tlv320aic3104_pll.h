@@ -89,22 +89,21 @@ bool TLV320AIC3104::setPll(uint32_t clk, uint32_t p, uint32_t r, uint32_t j, uin
 		return true;
 }
 
-
-// Write  CODEC PLL values from struct pll and enable PLL if required.
-// Call after setPll()
+// Write CODEC PLL values from struct pll and enable PLL if required.
+// Called by enable()
 void TLV320AIC3104::enablePll(bool enabled, int codec)
 {
 	uint8_t r3 = (enabled) ? 0x80 : 0 | pll.q << 3 | pll.p;
-	uint8_t r102 = (enabled)? 0x22: 0x02; // p75 - BCLK for PLLCLK_IN, MCLK for CLKDIV_IN 
-	for(int i = 0; i < _codecs; i++)
-	{
-			writeRegister(4, pll.j << 2, codec);
-			writeRegister(5, (pll.d >> 6) & 0xff , codec);
-			writeRegister(6, (pll.d << 2) & 0xff, codec);
-			writeRegister(11, pll.r & 0x0f, codec);
-			writeRegister(102, r102, codec);	//
-			writeRegister(3, r3, codec); // do this last 
-	}
+	uint8_t r102 = (enabled)? 0xA2 : 0x02; // p75 - BCLK for PLLCLK_IN, MCLK for CLKDIV_IN 
+
+	writeRegister(4, pll.j << 2, codec);
+	writeRegister(5, (pll.d >> 6) & 0xff , codec);
+	writeRegister(6, (pll.d << 2) & 0xff, codec);
+	writeRegister(11, pll.r & 0x0f, codec);
+	writeRegister(102, r102, codec);	//
+	writeRegister(3, r3, codec); // do this last 
+	
+	//Serial.printf("EnablePll r3 0x%02X, r4(J) 0x%02X, r102(PQen) 0x%02X, r5(Dh) 0x%02X, r6(Dl) 0x%02X, r11(R) 0x%02X\n", r3, pll.j << 2, r102, (pll.d >> 6) & 0xff, (pll.d << 2) & 0xff, pll.r & 0x0f);
 }
 
 aic_pll TLV320AIC3104::getPll()

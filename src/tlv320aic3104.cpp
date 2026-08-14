@@ -33,15 +33,16 @@ TLV320AIC3104::TLV320AIC3104(uint8_t codecs, bool useMCLK, uint8_t i2sMode, long
 bool TLV320AIC3104::enable(int8_t codec)
 {
 	bool ok;
-
+//Serial.printf("enable: rd %i\n", _resetDone);
 	if(!_resetDone) // subsequent enable() calls should not reset codecs
 	{
+//		Serial.println("enable: resetting");
 		reset();	
-		delay(100); // allow enough time for muxes to stabilise
-		resetCodecs();	// R8/9/10 (TDM 256 slot, slot ID, tristate DO when inactive)
-		delay(100); // allow enough MCLK cycles for codecs to stabilise		
-		_resetDone = true;
+		delay(10); // allow enough time for muxes to stabilise
 	}
+	resetCodecs();	// R8/9/10 + PLL regs(TDM 256 slot, slot ID, tristate DO when inactive, PLL if enabled)
+	delay(10); // allow enough MCLK cycles for codecs to stabilise		
+
 	(_verbose > 1) && fprintf(stderr, "Enable CODEC %i\n", codec);
 	if(codec > 1) // force TDM mode
 		if(_i2sMode != AICMODE_TDM)

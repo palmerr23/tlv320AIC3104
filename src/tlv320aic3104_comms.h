@@ -8,7 +8,7 @@
 
 void TLV320AIC3104::i2cBus(TwoWire *i2c)
 {
-	fprintf(stderr, "Wite 0x%08X 0x%08X\n", &Wire, i2c);
+	_verbose && fprintf(stderr, "Write 0x%08X 0x%08X\n", &Wire, i2c);
 	_i2c = i2c;
 }
 
@@ -32,9 +32,9 @@ uint8_t TLV320AIC3104::begin()
 	// _i2c->setWireTimeout(AIC_I2C_TIMEOUT, true);
 	pinMode(_resetPin, OUTPUT);
 	digitalWrite(_resetPin, HIGH);
-	delay(500); // CODECS may still be resetting after power up
-	reset();
-	delay(500); // CODECS and muxes will reset
+	delay(100); // CODECS may still be resetting after power up
+	// reset(); moved to enable()
+	delay(100); // CODECS and muxes will reset
 #ifdef SINGLE_CODEC
 	return 1;
 #else

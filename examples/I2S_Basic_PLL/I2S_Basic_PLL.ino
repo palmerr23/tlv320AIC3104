@@ -55,7 +55,7 @@ void i2sCallback()
 }
 
 int muxesFound = 0;
-#define PRINT_EVERY 5000
+#define PRINT_EVERY 10000
 uint32_t timer;
 void setup() 
 {
@@ -80,8 +80,8 @@ void setup()
 	i2s.setDIN(DIN);
 #endif
   i2s.setBCLK(BCLK); // LRCLK (WCLK) pin = BCLK + 1
-	i2s.setMCLK(MCLK);
-  i2s.setMCLKmult(MCLKmult);
+	//i2s.setMCLK(MCLK);
+  //i2s.setMCLKmult(MCLKmult);
   i2s.setBitsPerSample(sampleLength);
   i2s.setFrequency(sampleRate);
   i2s.onTransmit(i2sCallback);
@@ -171,3 +171,12 @@ void i2cScan(TwoWire *i2c) {
   Serial.print (count, DEC);
   Serial.println (" device(s)\n");
 }
+
+/*
+void printPll()
+{
+  aic_pll pll;
+  pll = aic.getPll();
+  Serial.printf("Pll P 0x%02x, R 0x%02x, J 0x%02x, D 0x%04x, Q 0x%02x\n", pll.p, pll.r, pll.j, pll.d, pll.q);
+}
+*/

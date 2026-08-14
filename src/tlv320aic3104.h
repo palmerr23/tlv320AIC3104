@@ -41,7 +41,7 @@ To Do:
 #ifndef _TLV320AIC3104_H
 #define _TLV320AIC3104_H
 
-#define DEFAULT_RESET_PIN 22
+#define DEFAULT_RESET_PIN 16
 #define PROD_I2S false			// true = turn off I2C muxing for a single codec
 #define TLV_I2CSPEED 400000
 #define MUX_MAX 8		// PCA9548 has 3 address pins
