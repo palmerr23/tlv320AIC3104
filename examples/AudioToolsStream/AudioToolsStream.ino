@@ -111,14 +111,4 @@ void loop() {
   copier.copy();
 }
 
-/*
-void setup()
-{
 
-}
-
-void loop()
-{
-
-}
-*/
