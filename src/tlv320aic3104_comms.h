@@ -24,7 +24,7 @@ void TLV320AIC3104::reset()
 	digitalWrite(_resetPin, LOW);
 	delay(1);
 	digitalWrite(_resetPin, HIGH);
-	delay(100); // allow CODECS to settle			
+	delay(2); // allow CODECS to settle			
 	_resetDone = true;	
 }
 uint8_t TLV320AIC3104::begin()
@@ -32,9 +32,9 @@ uint8_t TLV320AIC3104::begin()
 	// _i2c->setWireTimeout(AIC_I2C_TIMEOUT, true);
 	pinMode(_resetPin, OUTPUT);
 	digitalWrite(_resetPin, HIGH);
-	delay(100); // CODECS may still be resetting after power up
+	delay(1); // CODECS may still be resetting after power up
 	// reset(); moved to enable()
-	delay(100); // CODECS and muxes will reset
+	//delay(5); // CODECS  will reset
 #ifdef SINGLE_CODEC
 	return 1;
 #else

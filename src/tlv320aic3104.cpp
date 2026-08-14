@@ -41,7 +41,7 @@ bool TLV320AIC3104::enable(int8_t codec)
 		delay(10); // allow enough time for muxes to stabilise
 	}
 	resetCodecs();	// R8/9/10 + PLL regs(TDM 256 slot, slot ID, tristate DO when inactive, PLL if enabled)
-	delay(10); // allow enough MCLK cycles for codecs to stabilise		
+	delay(100); // allow enough MCLK cycles for codecs to stabilise		
 
 	(_verbose > 1) && fprintf(stderr, "Enable CODEC %i\n", codec);
 	if(codec > 1) // force TDM mode
@@ -75,15 +75,14 @@ void TLV320AIC3104::resetCodecs(void)
 		// Explicit Switch to config register page 0 and soft reset
 		writeRegister(0x00, 0x00, i); // code page 0
 		writeRegister(0x01, 0x80, i); // soft reset
-		delay(1); // reset timing?
+		delay(2); // reset timing?
 		// PLL
 		enablePll(!_usingMCLK, i);
 		// Safe I2S/TDM key parameters
 		writeRegister(0x08, 0x20, i); // hi-z on idle
 		writeR9(i); 	// DSP mode and slot
 		writeR10(i); 	// Only 16 bits implemented
-	}
-	delay(100);
+	}	
 }
 
 // Per-codec enable
