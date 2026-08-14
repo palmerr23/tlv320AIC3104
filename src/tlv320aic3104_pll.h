@@ -62,25 +62,33 @@ unsigned long TLV320AIC3104::setPllClkIn(long sampRate)
 }
 
 // Set pll struct variables, except q, but don't write changes to CODECs.
-int TLV320AIC3104::setPll(uint32_t clk, uint32_t p, uint32_t r, uint32_t j,uint32_t d)
+bool TLV320AIC3104::setPll(uint32_t clk, uint32_t p, uint32_t r, uint32_t j, uint32_t d, uint32_t q)
 {
 		if(j > 63 || j < 1)
-			return 1;
+			return false;
 		if(d  > 9999)
-			return 1;
+			return false;
 		if(p > 8 || p < 1)
-			return 1;
-		// if(q > 17 || q < 2) return 1; // Q is not changed
-		if(r > 16) //value out of range
-			return 1;
+			return false;
+		if(r > 16) 
+			return false;
+		if (q < 2 || q > 17)
+			return false; 
 		pll.clk = clk;
-		pll.p = p;
+		if(p < 8)
+			pll.p = p;
+		else
+			pll.p = 0;
 		pll.j = j;
 		pll.d = d;
-		// pll.q is unchanged
+		if(q < 16)
+			pll.q = q;
+		else
+			pll.q = q - 16;
 		setPllK();
-		return 0;
+		return true;
 }
+
 
 // Write  CODEC PLL values from struct pll and enable PLL if required.
 // Call after setPll()

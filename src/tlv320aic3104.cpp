@@ -199,13 +199,12 @@ void TLV320AIC3104::writeR9(uint8_t codec)		// p51
 		default:
 			val = 0;
 	}
-	
-		(_verbose > 1) && fprintf(stderr, "sample length %i, val 0x%02X\n", _sampleLength, val);
-		if(_i2sMode == AICMODE_DSP)  // probably unnecessary - only master mode? 
+		if(_i2sMode == AICMODE_DSP)  // probably unnecessary - only for master mode? 
 			val |= 0x08;	// 256-clock mode
 		val += _i2sMode << 6;		
 		if (_reSync) 
 				val |= 0x07; // ADC & DAC
+		(_verbose > 1) && fprintf(stderr, "R9: sample length %i, val 0x%02X\n", _sampleLength, val);
 		writeRegister(9, val, codec);
 }
 

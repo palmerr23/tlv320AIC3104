@@ -35,6 +35,9 @@ To Do:
 	Input 1 routing and gain trim
 	AGC
 */
+#define TEENSY 0
+#define PICO 1
+#define PLATFORM PICO
 #ifndef _TLV320AIC3104_H
 #define _TLV320AIC3104_H
 
@@ -43,7 +46,9 @@ To Do:
 #define TLV_I2CSPEED 400000
 #define MUX_MAX 8		// PCA9548 has 3 address pins
 //#define IGNORE_CODECS	// don't read or write to codecs that aren't provisioned: i.e. when # codecs specified > discovered muxes * 4
-#define SINGLE_CODEC	// no multiplexers - just one CODEC
+
+// Code works fine with a single codec if SINGLE_CODEC is not defined, unless there's some other I2C device in the MUX range 0x70++
+//#define SINGLE_CODEC	// no multiplexers - just one CODEC. 
 
 #include <Arduino.h> 
 #include <Wire.h>
@@ -62,7 +67,11 @@ To Do:
 #define AICMODE_RJ			0x2
 #define AICMODE_LJ			0x3
 #define AICMODE_TDM			AICMODE_DSP
-#define AIC_TDM_OFFSET	1			// Teensy Audio: invert BCLK, offset slots by 1 BCLK
+#if(PLATFORM == TEENSY) 
+	#define AIC_TDM_OFFSET	1			// Teensy Audio: (always 16 bit) invert BCLK, offset slots by 1 BCLK
+#else
+	#define AIC_TDM_OFFSET	0		//  Pico Audio: offset slots by 1 for 32 bit, ? for 16 bit, invert BCLK
+#endif
 #define AIC_FIRST_SLOT	0 		// shift first CODEC for testing later slots
 #define AIC_TDM_CLOCKS	256		// 16 x 16-bit slots
 #define AIC_TM_SLOT_SHIFT 5 	// (2 x 16 = 32 bits for 2 channels)
@@ -150,7 +159,7 @@ public:
 	
 	// PLL 
 	unsigned long setPllClkIn(long sampRate = 44100); // potted Pll values - values will usually work if PLL is required (!useMCLK)
-	int setPll(uint32_t clk, uint32_t p, uint32_t r, uint32_t j,uint32_t d);
+	bool setPll(uint32_t clk, uint32_t p, uint32_t r, uint32_t j,uint32_t d, uint32_t q = 2);
 	aic_pll getPll(); // set specific variables, but do not update codec.
 	unsigned long getPllFsRef(); // return calculated fsRef for assigned pll values	
 	void i2cBus(TwoWire *i2c); // Wire.begin is user responsibility 
@@ -228,6 +237,7 @@ public:
 	void muxDecode(uint8_t codec);
 	int readRegister(uint8_t reg, uint8_t codec);
 	void setRegPage(uint8_t newPage, int8_t codec = AIC_ALL_CODECS); // change the page register
+		bool writeRegister(uint8_t reg, uint8_t value, uint8_t codec);	
 protected:
 	TwoWire *_i2c = &Wire;
 	bool volumeInteger(int gainStep, int8_t channel = AIC_ALL_CHANNELS, int8_t codec = AIC_ALL_CODECS);
@@ -235,10 +245,10 @@ protected:
 	uint8_t gainInteger(uint8_t gainStep, int8_t channel = AIC_ALL_CHANNELS, int8_t codec = AIC_ALL_CODECS); // in PGA steps (p 50)
 	uint8_t gainToStep(float gain);  // converts dB gain to register setting
 	void setDACfilter(int stage, const int *coefx, int8_t channel = AIC_ALL_CHANNELS, int8_t codec = AIC_ALL_CODECS);
-	
+
 private:
 	void resetCodecs(void); // reset all the codecs to a known state
-	bool writeRegister(uint8_t reg, uint8_t value, uint8_t codec);
+
 	void enablePll(bool enabled = false, int codec =  AIC_ALL_CODECS); // used only by enable()
 	float setPllK();
 	uint8_t calcStep(float vol);
